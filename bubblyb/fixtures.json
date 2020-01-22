@@ -1,0 +1,23 @@
+[
+    {
+        "model": "bubblyb.account",
+        "pk": "__self",
+        "fields": {
+        }
+    },
+    {
+        "model": "bubblyb.community",
+        "pk": "__global",
+        "fields": {
+        }
+    },
+    {
+        "model": "bubblyb.icon",
+        "pk": 1,
+        "fields": {
+            "uploader": "__self",
+            "belongs_to": "__global",
+            "name": "Like"
+        }
+    }
+]
