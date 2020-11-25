@@ -2,15 +2,11 @@
 Django settings for bubblyb project.
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
+from dotenv import load_dotenv
+load_dotenv()
 
-import os, datetime
-from .env_vars import (
-    PRJCT_SECRET_KEY,
-    DEBUG_,
-    CORS_ALLOW,
-    POSTGRES_USER,
-    POSTGRES_PASSWD,
-)
+import os
+import datetime
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true" # hot reload bug workaround
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -23,10 +19,10 @@ MEDIA_URL = '/media/'
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
-SECRET_KEY = PRJCT_SECRET_KEY
+SECRET_KEY = os.getenv('PRJCT_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = DEBUG_
+DEBUG = True
 
 
 # Application definition
@@ -93,15 +89,29 @@ ASGI_APPLICATION = "bubblyb.routing.application"
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+_SQLITE = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+}
+_MYSQL = {
+    'ENGINE': 'django.db.backends.mysql',
+    'NAME': os.getenv('DB_NAME'),
+    'USER': os.getenv('MYSQL_USER'),
+    'PASSWORD': os.getenv('MYSQL_PWD'),
+    'HOST': os.getenv('MYSQL_HOST'),
+    'PORT': os.getenv('MYSQL_PORT'),
+    'OPTIONS': {'charset': 'utf8mb4'},
+}
+_POSTGRES = {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': os.getenv('DB_NAME'),
+    'USER': os.getenv('POSTGRES_USER'),
+    'PASSWORD': os.getenv('POSTGRES_PWD'),
+    'HOST': os.getenv('POSTGRES_HOST'),
+    'PORT': os.getenv('POSTGRES_PORT'),
+}
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'bubbly_db',
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWD,
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': _SQLITE
 }
 
 
@@ -152,30 +162,33 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '30/minute',
-        'user': '120/minute'
+        'anon': '60/minute',
+        'user': '140/minute'
     }
 }
 
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [(REDIS_HOST, REDIS_PORT)],
         },
     },
 }
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
+        "LOCATION": f"redis://{REDIS_HOST}:{REDIS_PORT}",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
 
-CORS_ORIGIN_WHITELIST = [CORS_ALLOW,]
+CORS_ORIGIN_WHITELIST = [os.getenv('CLIENT_HOST'),]
 ALLOWED_HOSTS = ['localhost', '127.0.0.1'] # websocket
 INTERNAL_IPS = ['127.0.0.1'] # debug toolbar
 

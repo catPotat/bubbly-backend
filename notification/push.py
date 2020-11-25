@@ -1,10 +1,7 @@
+import os
 import requests
 import json
 import asyncio
-from bubblyb.env_vars import (
-    ONESIGNAL_AUTH_KEY,
-    ONESIGNAL_APP_ID
-)
 
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -14,15 +11,15 @@ from chat.models import Message
 
 header = {
     "Content-Type": "application/json; charset=utf-8",
-    "Authorization": "Basic "+ONESIGNAL_AUTH_KEY
+    "Authorization": "Basic "+ os.getenv('ONESIGNAL_AUTH_KEY')
 }
 def do_req(data):
     req = requests.post("https://onesignal.com/api/v1/notifications", headers=header, data=data)
     # print(req.status_code, req.reason)
 loop = asyncio.get_event_loop()
-def sendPush(to=("long",), message="You have a notification!", click_to="http://localhost:3000/notifications", title="", imageUrl=""):
+def sendPush(to=("long",), message="You have a notification!", click_to=f"{os.getenv('CLIENT_HOST')}/notifications", title="", imageUrl=""):
     payload = {
-        "app_id": ONESIGNAL_APP_ID,
+        "app_id": os.getenv('ONESIGNAL_APP_ID'),
         "include_external_user_ids": to,
         "headings": {
             "en": title
@@ -60,7 +57,7 @@ def new_message(sender, **kwargs):
         sendPush(
             tuple(to_send),
             obj.author.alias + content,
-            "http://localhost:3000/chat/t/"+str(obj.thread.id),
+            f"{os.getenv('CLIENT_HOST')}/chat/t/"+str(obj.thread.id),
             obj.thread.name or "Chat message",
             obj.author.profile_pic,
         )

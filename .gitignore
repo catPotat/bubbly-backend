@@ -123,8 +123,8 @@ dmypy.json
 venv_pypy/
 bubbly-online-web - Lối tắt.lnk
 dump.rdb
-bubblyb/env_vars.py
 posts/management/commands/last_ran.txt
 
 */migrations/*
 !*/migrations/__init__.py
+.env.production
